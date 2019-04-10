@@ -1,11 +1,15 @@
+import xlwt
 from pymongo import MongoClient
 import xlrd
 import re
+from xlutils.copy import copy
+
 
 client = MongoClient('localhost', 27017)
 db = client.linked
 collection1 = db['edu_job_age']
 collection2 = db['information']
+collection4 = db['skills_likes_ages']
 
 
 def read_write_mongo():
@@ -25,6 +29,14 @@ def read_write_mongo():
         # print(type(edu_year[i]))
         my_table = {"_id": id1[i], "edu_year": edu_year[i], "job_year": job_year[i], "age": aem_age[i]}
         collection0.insert_one(my_table)
+
+
+def write_mongo(like_num):
+    collection3 = db['skills_num']
+    for i in range(len(like_num)):
+        skill = re.sub(r'\.', '_', (like_num[i])[0])
+        my_table = {'_id': str(i+1), skill: str((like_num[i])[1])}
+        collection3.insert_one(my_table)
 
 
 def get_skills():
@@ -97,16 +109,54 @@ def get_num(skills_likes):
                 # print(type(dict2[key_arr[j]]))
                 # print(type((skills_likes[i])[key_arr[j]]))
                 # print(type(dict2[key_arr[j]]))
-    skill_likes_num = sorted(dict2.items(), key=lambda x: x[1], reverse=True)
+    skill_likes_num = sorted(dict2.items(), key=lambda x: x[1], reverse=True)  #字典按值降序排序
     skill_num = sorted(dict3.items(), key=lambda x: x[1], reverse=True)
     # print(type(skill_likes_num))
-    for i in range(30):
-        # print(i, (skill_likes_num[i]))
-        print(skill_num[i])
+    # for i in range(30):
+    #     print(i, (skill_likes_num[i]))
+    #     print(skill_num[i])
+    return skill_num, skill_likes_num
+
+
+# 获取某技能对应的id和年龄数据
+# 获取点赞数较多的某技能的
+def skill_age():
+    age = {}
+    collection0 = db['skills_num']
+    data = collection0.find_one({'_id': '6'})  # 获取某一技能的名字
+    skill = list(data.keys())  # 转换成列表便于查询
+    data1 = collection4.find()
+    for dict0 in data1:
+        # print(type(i))
+        keys = list(dict0.keys())
+        if skill[1] == keys[2]:  # 找到某一特定顺序技能所在的位置，并将其用户的年龄存储到数组，并计算相同年龄的人数
+            if dict0['age'] in age_keys:
+                age[dict0['age']] += 1
+            else:
+                age[dict0['age']] = 1
+        age_keys = list(age.keys())
+    # print(age_keys)
+    # 第一次新建文件：
+        # book = xlwt.Workbook(encoding='utf-8', style_compression=0)  # 写入xls文档中
+        # sheet = book.add_sheet('Litigation', cell_overwrite_ok=True)
+        # sheet.write(0, 0, 'age')
+        # sheet.write(0, 1, 'number')
+    # 向xls文件中添加新的sheet表：
+    book = xlrd.open_workbook(r'C:\Users\Administrator\Desktop\age_num1.xls')
+    work_space = copy(book)
+    sheet = work_space.add_sheet('Microsoft Project', cell_overwrite_ok=True)
+    sheet.write(0, 0, 'age')
+    sheet.write(0, 1, 'number')
+    for i in range(len(age_keys)):
+        sheet.write(i+1, 0, age_keys[i])
+        sheet.write(i+1, 1, age[age_keys[i]])
+    work_space.save(r'C:\Users\Administrator\Desktop\age_num1.xls')
 
 
 if __name__ == "__main__":
     # read_write_mongo()
-    skill_likes = get_skills()
+    # skill_likes = get_skills()
     # replace__()
-    get_num(skill_likes)
+    # skills_num, skill_like_num = get_num(skill_likes)
+    # write_mongo(skills_num)
+    skill_age()

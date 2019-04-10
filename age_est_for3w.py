@@ -81,7 +81,7 @@ def get_year(date_time):
 
 def write_to_xls():
     ids1, ids2, edu_year, job_year = age_est()
-    print(len(ids1), len(edu_year),len(ids2), len(job_year))
+    print(len(ids1), len(edu_year), len(ids2), len(job_year))
     book = xlwt.Workbook(encoding='utf-8', style_compression=0)
     sheet = book.add_sheet('edu_job_year', cell_overwrite_ok=True)
     sheet.write(0, 0, 'id1')
@@ -101,8 +101,7 @@ def write_to_xls():
     for i in range(len(ids2)):
         sheet.write(i+1, 2, ids2[i])
         sheet.write(i+1, 3, job_year[i])
-        i += 1
-    book.save(r'C:\Users\Administrator\Desktop\edu_job_year.xls')
+    book.save(r'C:\Users\Administrator\Desktop\edu_job_year1.xls')
 
 
 if __name__ == "__main__":
